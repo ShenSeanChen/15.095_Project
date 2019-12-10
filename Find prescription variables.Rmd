@@ -1,0 +1,847 @@
+---
+title: "Find prescription variables"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+
+
+library(caret)
+library(caTools)
+library(dplyr)
+# install.packages("randomForest")
+library(randomForest) #for bagging and random forests 
+# install.packages("gbm")
+library(gbm) #for boosting
+library(rpart) # for building CART model
+# install.packages("rpart.plot")
+library(rpart.plot)
+
+
+```
+
+
+### Load data, factorize columns, clean, sanity check, etc
+```{r}
+data = read.csv("data/data_clustered.csv")
+
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.bed.time.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.ethnicity)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.gender)) +
+             coord_flip()
+
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.introvert)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.location)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.marital)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.ideal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.minimum)) +
+             coord_flip()
+
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.occupation)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.prefer.activity)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.rise.time.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.rise.time.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.social.event.yesterday)) +
+             coord_flip()
+# data %>%
+#              ggplot() +
+#              geom_bar(aes(x=Answer.sports)) +
+#              coord_flip()
+
+# data %>%
+#              ggplot() +
+#              geom_bar(aes(x=Answer.meal.time.normal)) +
+#              coord_flip()
+# data %>%
+#              ggplot() +
+#              geom_bar(aes(x=Answer.meal.time.yesterday)) +
+#              coord_flip()
+
+## Income Level
+data_income <- data.frame(Answer.income=c(1,2,3,4,5,6,7,0), Answer.income.label=c("$0 to $10,000",
+                                                                            "$10,000 to $40,000",
+                                                                            "$40,000 to $80,000",
+                                                                            "$80,000 to $160,000",
+                                                                            "$160,000 to $200,000",
+                                                                            "$200,000 to $500,000",
+                                                                            "Above $500,000",
+                                                                            "Prefer not to say"))
+  
+data %>% left_join(data_income, by="Answer.income") %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.income.label)) +
+             coord_flip() 
+  
+data %>% left_join(data_income, by="Answer.income") %>% select(Answer.income, Answer.income.label)
+
+# Occupation status
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.occupation)) +
+             coord_flip()
+
+data_occupation <- data.frame(Answer.occupation=c(1,2,3,4,5,6,7,0), Answer.occupation.label=c("$0 to $10,000",
+                                                                            "$10,000 to $40,000",
+                                                                            "$40,000 to $80,000",
+                                                                            "$80,000 to $160,000",
+                                                                            "$160,000 to $200,000",
+                                                                            "$200,000 to $500,000",
+                                                                            "Above $500,000",
+                                                                            "Prefer not to say"))
+
+Answer.introvert
+
+data_occupation <- data.frame(Answer.introvert=c(1,2,3,0), Answer.introvert.label=c("Mostly introverted", "It depends/I'm not too sure", "Mostly extroverted", "I prefer not to answer"))
+
+data %>% left_join(data_occupation, by="Answer.introvert") %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.introvert.label)) +
+             coord_flip()
+
+
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.marital)) +
+             coord_flip()
+
+
+# <input type="radio" name="introvert" value="1">Mostly introverted 
+# <input type="radio" name="introvert" value="3">Mostly extroverted <br/>
+# <input type="radio" name="introvert" value="2">It depends/I'm not too sure 
+# <input type="radio" name="introvert" value="0">I prefer not to answer 
+
+```
+
+```{r}
+
+# r_data_cleaned <- read.csv("data/r_data_cleaned.csv")
+
+
+
+# k=3
+# data.km = kmeans(data, k)
+# data.km$cluster
+# data$km <- data.km$cluster
+
+#factorize columns
+# cols <- c("Cluster", 
+#           "Answer.bed.time.normal",
+#           "Answer.ethnicity",
+#           "Answer.bed.time.yesterday",
+#           "Answer.gender",
+#           "Answer.income",
+#           "Answer.introvert",
+#           "Answer.location",
+#           "Answer.marital",
+#           "Answer.occupation",
+#           "Answer.prefer.activity",
+#           "Answer.rise.time.normal",
+#           "Answer.rise.time.yesterday",
+#           "Answer.social.event.yesterday",
+#           "Answer.sports")
+# cols <- c("Cluster")
+# data[cols] <- lapply(data[cols], factor)
+```
+
+### Split data according to clusters (3)
+```{r}
+cluster1 <-
+  data %>%
+  filter(Cluster == 0)
+
+cluster2 <-
+  data %>%
+  filter(Cluster == 1)
+
+cluster3 <-
+  data %>%
+  filter(Cluster == 2)
+
+# cluster1 <-
+#   data %>%
+#   filter(km == 1)
+# 
+# cluster2 <-
+#   data %>%
+#   filter(km == 2)
+# 
+# cluster3 <-
+#   data %>%
+#   filter(km == 3)
+```
+
+
+### For each cluster, split data into test train
+```{r}
+require(caTools)  # loading caTools library
+
+set.seed(123)
+#Cluster 1
+sample = sample.split(cluster1,SplitRatio = 0.75)
+train1 = subset(cluster1,sample ==TRUE) %>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+test1=subset(cluster1, sample==FALSE)%>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+     
+#Cluster 2
+sample = sample.split(cluster2,SplitRatio = 0.75)
+train2 = subset(cluster2,sample ==TRUE)%>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+test2 = subset(cluster2, sample==FALSE)%>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+
+#Cluster 3
+sample = sample.split(cluster3,SplitRatio = 0.75)
+train3 = subset(cluster3,sample ==TRUE)%>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+test3 = subset(cluster3, sample==FALSE)%>% select(-Cluster)  %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+     
+# #Cluster 4
+# sample = sample.split(cluster4,SplitRatio = 0.75)
+# train4 = subset(cluster4,sample ==TRUE)
+# test4 = subset(cluster4, sample==FALSE)
+#      
+# #Cluster 5
+# sample = sample.split(cluster5,SplitRatio = 0.75)
+# train5 = subset(cluster5,sample ==TRUE)
+# test5 = subset(cluster5, sample==FALSE)
+
+```
+
+
+
+### Modeling
+
+```{r}
+library(readr)
+library(lubridate)
+library(magrittr)
+```
+
+
+### 1. CART
+```{r}
+#Cluster 1
+cps <- data.frame(.cp = c(.00001,0.0001,0.001,0.01,0.1))
+set.seed(123)
+
+cpCV = train(Energy_today ~ .,
+             trControl=trainControl(method="cv",number=10), 
+             data=train1, method="rpart",minbucket=5,
+             tuneGrid=cps, metric="Rsquared", maximize=TRUE)
+  
+  # train(Energy_today ~ Answer.game.yesterday.time +
+  #         Answer.leisure.yesterday.time + Answer.sleep.yesterday.time +
+  #         Answer.socialmedia.yesterday.time + Answer.work.yesterday.time +
+  #         Answer.youtube.yesterday.time + Answer.bed.time.yesterday +
+  #         Answer.meal.yesterday + Answer.rise.time.yesterday +
+  #         Answer.social.event.yesterday + Meal_Irregularity_Score,
+  #            trControl=trainControl(method="cv",number=10), 
+  #            data=train1, method="rpart",minbucket=5,
+  #            tuneGrid=cps, metric="Rsquared", maximize=TRUE)
+cpCV
+best.cp = cpCV$bestTune
+best.cp
+
+ggplot(cpCV$results, aes(x=factor(cp), y=Rsquared)) +
+  geom_point() +
+  theme_bw() +
+  ylim(0,1) + 
+  xlab("cp parameter") +
+  ylab("Cross-validated R2") +
+  ggtitle("10-Fold Cross Validation Result") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+treeFinal1 <- rpart(Energy_today ~ ., 
+          data=train1, 
+          minbucket = 5, cp=best.cp)
+  
+  # rpart(Energy_today ~ Answer.game.yesterday.time +
+  #         Answer.leisure.yesterday.time + Answer.sleep.yesterday.time +
+  #         Answer.socialmedia.yesterday.time + Answer.work.yesterday.time +
+  #         Answer.youtube.yesterday.time + Answer.bed.time.yesterday +
+  #         Answer.meal.yesterday + Answer.rise.time.yesterday +
+  #         Answer.social.event.yesterday + Meal_Irregularity_Score, 
+  #         data=train1, 
+  #         minbucket = 5, cp=best.cp)
+
+prp(treeFinal1, digits = 3, varlen = 0, faclen = 0)
+```
+
+
+```{r}
+#Get variable importance
+importance <- 
+  treeFinal1$variable.importance
+importance1.ct <- data.frame(importance)
+head(importance1.ct)
+```
+
+```{r}
+#Out of sample R2
+T1.test.pred = predict(treeFinal1, newdata = test1)
+SST = sum((test1$Energy_today - mean(test1$Energy_today))^2)
+SSE = sum((T1.test.pred - test1$Energy_today)^2)
+T1.out.R2 <- 1 - SSE/SST 
+T1.out.R2
+
+# hist(test1$Energy_today)
+# hist(train1$Energy_today)
+```
+
+
+```{r}
+#Cluster 2
+cps <- data.frame(.cp = c(.00001,0.0001,0.001,0.01,0.1))
+set.seed(123)
+
+cpCV = train(Energy_today ~ .,
+             trControl=trainControl(method="cv",number=10), 
+             data=train2, method="rpart",minbucket=5,
+             tuneGrid=cps, metric="Rsquared", maximize=TRUE)
+cpCV
+best.cp = cpCV$bestTune
+best.cp
+
+ggplot(cpCV$results, aes(x=factor(cp), y=Rsquared)) +
+  geom_point() +
+  theme_bw() +
+  ylim(0,1) + 
+  xlab("cp parameter") +
+  ylab("Cross-validated R2") +
+  ggtitle("10-Fold Cross Validation Result") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+treeFinal2 <- rpart(Energy_today ~ ., 
+          data=train2, 
+          minbucket = 5, cp=0.01)
+
+prp(treeFinal2, digits = 3, varlen = 0, faclen = 0)
+```
+
+
+```{r}
+#Get variable importance
+importance <- 
+  treeFinal2$variable.importance
+importance2.ct <- data.frame(importance)
+head(importance2.ct)
+```
+
+```{r}
+#Out of sample R2
+T2.test.pred = predict(treeFinal2, newdata = test2)
+SST = sum((test2$Energy_today - mean(test2$Energy_today))^2)
+SSE = sum((T2.test.pred - test2$Energy_today)^2)
+T2.out.R2 <- 1 - SSE/SST 
+T2.out.R2
+```
+
+
+
+```{r}
+# #Cluster 3
+  cps <- data.frame(.cp = c(.00001,0.0001,0.001,0.01,0.1))
+  set.seed(123)
+ 
+  cpCV = train(Energy_today ~ .,
+               trControl=trainControl(method="cv",number=10),
+               data=train3, method="rpart",minbucket=5,
+               tuneGrid=cps, metric="Rsquared", maximize=TRUE)
+  cpCV
+  best.cp = cpCV$bestTune
+  best.cp
+ 
+  ggplot(cpCV$results, aes(x=factor(cp), y=Rsquared)) +
+    geom_point() +
+    theme_bw() +
+    ylim(0,1) +
+    xlab("cp parameter") +
+    ylab("Cross-validated R2") +
+    ggtitle("10-Fold Cross Validation Result") +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+  treeFinal3 <- rpart(Energy_today ~ .,
+            data=train3,
+            minbucket = 5, cp=0.01)
+ 
+  prp(treeFinal3, digits = 3, varlen = 0, faclen = 0)
+```
+
+```{r}
+  #Get variable importance
+  importance <-
+    treeFinal3$variable.importance
+  importance3.ct <- data.frame(importance)
+  importance3.ct
+  
+  # hist(train3$Energy_today)
+  # hist(test3$Energy_today)
+  
+  # cor(train3 %>% select(Answer.leisure.yesterday.time, Answer.work.yesterday.time, Answer.youtube.yesterday.time, Answer.socialmedia.yesterday.time))
+```
+
+```{r}
+# #Out of sample R2
+  T3.test.pred = predict(treeFinal3, newdata = test3)
+  SST = sum((test3$Energy_today - mean(test3$Energy_today))^2)
+  SSE = sum((T3.test.pred - test3$Energy_today)^2)
+  T3.out.R2 <- 1 - SSE/SST
+  T3.out.R2
+```
+
+
+
+
+
+
+
+
+### 2. RF
+```{r}
+#Cluster 1
+rf.oob <- 
+  train(x = train1 %>% select(-Energy_today),
+        
+        # %>% select(Answer.game.yesterday.time,
+        #   Answer.leisure.yesterday.time, Answer.sleep.yesterday.time,
+        #   Answer.socialmedia.yesterday.time, Answer.work.yesterday.time,
+        #   Answer.youtube.yesterday.time, Answer.bed.time.yesterday,
+        #   Answer.meal.yesterday, Answer.rise.time.yesterday, 
+        #   Answer.social.event.yesterday, Meal_Irregularity_Score),
+                      y = train1$Energy_today,
+                      method="rf",
+                      tuneGrid=data.frame(mtry=1: 11),
+                      ntree=80, nodesize=25,
+                      trControl=trainControl(method="oob"))
+
+best.mtry <- rf.oob$bestTune[[1]]
+best.mtry
+
+rf.final1 = randomForest(Energy_today ~ .,
+                           
+          #                  Answer.game.yesterday.time +
+          # Answer.leisure.yesterday.time + Answer.sleep.yesterday.time +
+          # Answer.socialmedia.yesterday.time + Answer.work.yesterday.time +
+          # Answer.youtube.yesterday.time + Answer.bed.time.yesterday +
+          # Answer.meal.yesterday + Answer.rise.time.yesterday +
+          # Answer.social.event.yesterday + Meal_Irregularity_Score,
+          data=train1, 
+                        mtry=rf.oob$bestTune[[1]],
+                        ntree=80, nodesize=25)
+
+importance <- 
+  rf.final1$importance[order(-rf.final1$importance),]
+importance1.rf <- data.frame(importance)
+importance1.rf
+```
+
+```{r}
+ggplot(rf.oob$results, aes(x=mtry, y=Rsquared)) +
+  geom_point(size=1) +
+  theme_bw() +
+  xlab("Number of variables per split") +
+  ylab("Out-of-bag R^2") +
+  ggtitle("Out of Bag Result for Different mtry Parameters") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+rf.test.pred1 = predict(rf.final1, newdata = test1)
+SST = sum((test1$Energy_today - mean(test1$Energy_today))^2)
+SSE = sum((rf.test.pred1 - test1$Energy_today)^2)
+rf1.out.R2 <- 1 - SSE/SST
+rf1.out.R2
+```
+
+
+
+```{r}
+#Cluster 2
+rf.oob <- 
+  train(x = train2 %>% select(-Energy_today),
+                      y = train2$Energy_today,
+                      method="rf",
+                      tuneGrid=data.frame(mtry=1: 11),
+                      ntree=80, nodesize=25,
+                      trControl=trainControl(method="oob"))
+
+best.mtry <- rf.oob$bestTune[[1]]
+best.mtry
+
+rf.final2 = randomForest(Energy_today ~ .,
+          data=train2, 
+                        mtry=rf.oob$bestTune[[1]],
+                        ntree=80, nodesize=25)
+
+importance <- 
+  rf.final2$importance[order(-rf.final2$importance),]
+importance2.rf <- data.frame(importance)
+importance2.rf
+```
+
+```{r}
+ggplot(rf.oob$results, aes(x=mtry, y=Rsquared)) +
+  geom_point(size=1) +
+  theme_bw() +
+  xlab("Number of variables per split") +
+  ylab("Out-of-bag R^2") +
+  ggtitle("Out of Bag Result for Different mtry Parameters") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+rf.test.pred2 = predict(rf.final2, newdata = test2)
+SST = sum((test2$Energy_today - mean(test2$Energy_today))^2)
+SSE = sum((rf.test.pred2 - test2$Energy_today)^2)
+rf2.out.R2 <- 1 - SSE/SST
+rf2.out.R2
+```
+
+
+```{r}
+#Cluster 3
+  rf.oob <-
+    train(x = train3 %>% select(-Energy_today),
+                        y = train3$Energy_today,
+                        method="rf",
+                        tuneGrid=data.frame(mtry=1: 11),
+                        ntree=80, nodesize=25,
+                        trControl=trainControl(method="oob"))
+ 
+  best.mtry <- rf.oob$bestTune[[1]]
+  best.mtry
+ 
+  rf.final3 = randomForest(Energy_today ~ .,
+            data=train3,
+                          mtry=rf.oob$bestTune[[1]],
+                          ntree=80, nodesize=25)
+ 
+  importance <-
+    rf.final3$importance[order(-rf.final3$importance),]
+  importance3.rf <- data.frame(importance)
+  importance3.rf
+```
+
+```{r}
+  ggplot(rf.oob$results, aes(x=mtry, y=Rsquared)) +
+    geom_point(size=1) +
+    theme_bw() +
+    xlab("Number of variables per split") +
+    ylab("Out-of-bag R^2") +
+    ggtitle("Out of Bag Result for Different mtry Parameters") +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+  
+```{r}
+  rf.test.pred3 = predict(rf.final3, newdata = test3)
+  SST = sum((test3$Energy_today - mean(test3$Energy_today))^2)
+  SSE = sum((rf.test.pred3 - test3$Energy_today)^2)
+  rf3.out.R2 <- 1 - SSE/SST
+  rf3.out.R2
+```
+
+
+
+ ## 3. Linear Regression? (DISCARDED -- Shitty result :( Oh nooooooooo )
+```{r}
+#Cluster 1
+
+c1_lm_fit <-
+  lm(formula = Energy_today ~.,data = train1)
+  # lm(formula = Energy_today ~ Answer.game.yesterday.time +
+  #         Answer.leisure.yesterday.time + Answer.sleep.yesterday.time +
+  #         Answer.socialmedia.yesterday.time + Answer.work.yesterday.time +
+  #         Answer.youtube.yesterday.time + Answer.bed.time.yesterday +
+  #         Answer.meal.yesterday + Answer.rise.time.yesterday +
+  #         Answer.social.event.yesterday + Meal_Irregularity_Score,
+  #         data = train1)
+summary(c1_lm_fit)
+```
+
+```{r}
+c1_lm_predict <- predict(c1_lm_fit, test1)
+SSE = sum((test1$Energy_today - c1_lm_predict)^2)
+SST = sum((test1$Energy_today - mean(test1$Energy_today))^2)
+OSR2.out.lm1 = 1 - SSE/SST
+OSR2.out.lm1
+```
+
+
+```{r}
+#Cluster 2
+c2_lm_fit <- 
+  lm(formula = Energy_today ~ ., 
+          data = train2)
+summary(c2_lm_fit)
+```
+
+```{r}
+c2_lm_predict <- predict(c2_lm_fit, test2)
+SSE = sum((test2$Energy_today - c2_lm_predict)^2)
+SST = sum((test2$Energy_today - mean(test2$Energy_today))^2)
+OSR2.out.lm2 = 1 - SSE/SST
+OSR2.out.lm2
+```
+
+
+```{r}
+# #Cluster 3
+  c3_lm_fit <- 
+    lm(formula = Energy_today ~ ., 
+            data = train3)
+  summary(c3_lm_fit)
+```
+  
+```{r}
+  c3_lm_predict <- predict(c3_lm_fit, test3)
+  SSE = sum((test3$Energy_today - c3_lm_predict)^2)
+  SST = sum((test3$Energy_today - mean(test3$Energy_today))^2)
+  OSR2.out.lm3 = 1 - SSE/SST
+  OSR2.out.lm3
+```
+
+
+
+
+```{r}
+## Cluster 1
+importance1.ct.final <- importance1.ct
+importance1.ct.final$ct1 <- gsub("Answer.", "", rownames(importance1.ct.final))
+importance1.ct.final$importance <- round(importance1.ct.final$importance,2)
+importance1.ct.final <- importance1.ct.final %>% unite("Cluster 1 Cart", ct1, importance, sep=": ", remove = FALSE)
+importance1.ct.final <- head(importance1.ct.final %>% select(-importance) %>% select(- ct1), 3)
+importance1.ct.final
+
+importance1.rf.final <- importance1.rf
+importance1.rf.final$ct1 <- gsub("Answer.", "", rownames( importance1.rf.final))
+importance1.rf.final$importance <- round( importance1.rf.final$importance,2)
+importance1.rf.final <-  importance1.rf.final %>% unite("Cluster 1 RandomForest", ct1, importance, sep=": ", remove = FALSE)
+importance1.rf.final <- head( importance1.rf.final %>% select(-importance) %>% select(- ct1), 3)
+importance1.rf.final
+
+cbind(importance1.ct.final, importance1.rf.final)
+
+## Cluster2
+
+importance2.ct.final <- importance2.ct
+importance2.ct.final$ct1 <- gsub("Answer.", "", rownames(importance2.ct.final))
+importance2.ct.final$importance <- round(importance2.ct.final$importance,2)
+importance2.ct.final <- importance2.ct.final %>% unite("Cluster 2 Cart", ct1, importance, sep=": ", remove = FALSE)
+importance2.ct.final <- head(importance2.ct.final %>% select(-importance) %>% select(- ct1), 3)
+# importance2.ct.final
+
+importance2.rf.final <- importance2.rf
+importance2.rf.final$ct1 <- gsub("Answer.", "", rownames( importance2.rf.final))
+importance2.rf.final$importance <- round( importance2.rf.final$importance,2)
+importance2.rf.final <-  importance2.rf.final %>% unite("Cluster 2 RandomForest", ct1, importance, sep=": ", remove = FALSE)
+importance2.rf.final <- head( importance2.rf.final %>% select(-importance) %>% select(- ct1), 3)
+# importance2.rf.final
+
+cbind(importance2.ct.final, importance2.rf.final)
+
+
+## Cluster3
+
+importance3.ct.final <- importance3.ct
+importance3.ct.final$ct1 <- gsub("Answer.", "", rownames(importance3.ct.final))
+importance3.ct.final$importance <- round(importance3.ct.final$importance,2)
+importance3.ct.final <- importance3.ct.final %>% unite("Cluster 3 Cart", ct1, importance, sep=": ", remove = FALSE)
+importance3.ct.final <- head(importance3.ct.final %>% select(-importance) %>% select(- ct1), 3)
+# importance3.ct.final
+
+importance3.rf.final <- importance3.rf
+importance3.rf.final$ct1 <- gsub("Answer.", "", rownames( importance3.rf.final))
+importance3.rf.final$importance <- round( importance3.rf.final$importance,2)
+importance3.rf.final <-  importance3.rf.final %>% unite("Cluster 3 RandomForest", ct1, importance, sep=": ", remove = FALSE)
+importance3.rf.final <- head( importance3.rf.final %>% select(-importance) %>% select(- ct1), 3)
+# importance3.rf.final
+
+cbind(importance3.ct.final, importance3.rf.final)
+
+cbind(importance1.ct.final, importance1.rf.final, 
+      importance2.ct.final, importance2.rf.final,
+      importance3.ct.final, importance3.rf.final)
+
+
+```
+
+### Ridge & Lasso Regressions
+```{r}
+##### Ridge regression and Lasso
+train1 <- train3
+
+# %>% select(-Cluster) %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+
+test1 <- test3
+
+# %>% select(-Cluster) %>% select(-Answer.easy.concentration) %>% select(-Answer.easy.conversation) %>% select(- Answer.energetic ) %>% select(-Answer.tired ) %>% select(-Answer.sleepy)
+
+# The built-in functions for ridge regression and Lasso make use of train and test matrices, defined as follows:
+x.train=model.matrix(Energy_today~.-1,data=train1) # The "-1" just mean that we are excluding the constant term (that is, the intercept)
+y.train=train1$Energy_today# Here, we are only including the dependent variable.
+x.test=model.matrix(Energy_today~.-1,data=test1) 
+y.test=test1$Energy_today
+
+# Let us look at what the model matrix looks like:
+x.train
+# When there is a categorical variable, the model matrix will include dummy variables with 0/1 values
+
+lambdas.ridge <- exp(seq(10, -5, -.01))
+lambdas.lasso <- exp(seq(5, -5, -.01))
+
+# Both ridge regression and lasso use the same function" glmnet()
+# The first two arguments are the "x" variables and the "y" variable
+# The next argument is the "alpha" parameter---equal to 0 for ridge and 1 for lasso (the default value is 1)
+# The last argument is the set of lambda values to try
+library(glmnet)
+ridge=glmnet(x.train,y.train,alpha=0,lambda=lambdas.ridge)
+lasso=glmnet(x.train,y.train,alpha=1,lambda=lambdas.lasso)
+
+# We can now plot the ridge path and the lasso path
+# The bottom x axis reports the value of log(lambda)
+# The values (y axis) correspond to the regression coefficients
+# The top x axis reports the corresponding number of non-zero coefficients
+plot(ridge,"lambda")
+plot(lasso,"lambda")
+# Note that both methods shrink the coefficients: The larger the lambda, the smaller the coefficients
+# The main difference is that lasso brings the coefficients all the way to 0 but ridge regression does not
+
+# The next question is: What is the best value of lambda?
+# We could make directly test-set predictions and choose the best one
+# But that would be cheating: You need to set the value of lambda without looking at the test set!
+# Therefore, we turn to cross-validation, using the cv.glmnet() function
+
+# Again, let us set the seed so we can all get the same results
+set.seed(144)
+
+# Here is the cross-validation syntax
+cv.ridge <- cv.glmnet(x.train,y.train,alpha=0,lambda=lambdas.ridge,nfolds=10)
+cv.lasso <- cv.glmnet(x.train,y.train,alpha=1,lambda=lambdas.ridge,nfolds=10)
+
+# Let us explore the results
+cv.ridge
+cv.lasso
+
+# Let us plot the results, that is, the cross-validation mean squared error as a function of log(lambda)
+# Again, the glmnet package makes it nice and easy for us
+plot(cv.lasso)
+plot(cv.ridge)
+
+# We can retrieve the best value of lambda and the 1-SE value of lambda, based on the cross-validation results
+ridge.lambda.cv <- cv.ridge$lambda.min
+ridge.lambda.1SE.cv <- cv.ridge$lambda.1se   # lambda.1se = lambda.min + 1*se (errs on the side of parsimony)
+lasso.lambda.cv <- cv.lasso$lambda.min
+lasso.lambda.1SE.cv <- cv.lasso$lambda.1se
+
+# Armed with these values of lambda, we can now re-train the model on the full training set and evaluate its out-of-sample performance on the test set
+# Do not forget to re-train your model; if you rely on cross-validation outputs, you are effectively using a subset of the training set---and you can do better than that!
+
+ridge.final <- glmnet(x.train,y.train,alpha=0,lambda=ridge.lambda.cv)
+pred.test.final <- predict(ridge.final,x.test)
+OSR2.ridge.final3 <- 1-sum((pred.test.final-test1$Energy_today)^2)/sum((mean(train1$Energy_today)-test1$Energy_today)^2)
+OSR2.ridge.final3
+
+lasso.final <- glmnet(x.train,y.train,alpha=1,lambda=lasso.lambda.cv)
+pred.test.final <- predict(lasso.final,x.test)
+OSR2.lasso.final3 <- 1-sum((pred.test.final-test1$Energy_today)^2)/sum((mean(train1$Energy_today)-test1$Energy_today)^2)
+OSR2.lasso.final3
+
+beta.lasso.3 <- lasso.final$beta
+beta.ridge.3 <- ridge.final$beta
+
+
+```
+
+
+
+```{r}
+cat("rf1 ")
+rf1.out.R2
+cat("rf2")
+rf2.out.R2
+cat("rf3")
+rf3.out.R2
+
+cat("tree1")
+T1.out.R2
+cat("tree2")
+T2.out.R2
+cat("tree3")
+T3.out.R2
+
+cat("lm1")
+OSR2.out.lm1
+cat("lm2")
+OSR2.out.lm2
+cat("lm3")
+OSR2.out.lm3
+
+cat("ridge1")
+OSR2.ridge.final1
+cat("ridge2")
+OSR2.ridge.final2
+cat("ridge3")
+OSR2.ridge.final3
+
+cat("lasso1")
+OSR2.lasso.final1
+cat("lasso2")
+OSR2.lasso.final2
+cat("lasso3")
+OSR2.lasso.final3
+
+
+```

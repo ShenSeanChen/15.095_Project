@@ -1,0 +1,90 @@
+---
+title: "CART"
+author: "Nicole"
+date: "24/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(caret) # for randomly splitting training/test 
+library(rpart) # for building CART model
+install.packages("rpart.plot")
+library(rpart.plot) # a library for an alternative way of plotting CART trees.
+library(caTools)
+library(dplyr)
+library(ggplot2)
+```
+
+## R Markdown
+
+```{r cars}
+data <- read.csv("data/pilot_data_clustered.csv")
+data <- data %>% filter(Answer.age < 100)
+
+
+#split data
+set.seed(144)
+split = createDataPartition(data$Cluster, p = 0.5, list = FALSE) 
+data.train <- data[split,]
+data.test <- data[-split,]
+
+#not cross validated
+tree = rpart(factor(data.train$Cluster) ~ .,
+                  data=data.train, method = "class",
+                  minbucket = 1, cp = 0.01)
+
+
+# Let us first define a vector of values to try. We use a logarithmic scale here.
+cpVals <- data.frame(.cp = c(0,0.000001,.00001,0.0001,0.001,0.01,0.1))
+
+# Let us fix the seed
+set.seed(123)
+# We use the train() function for cross-validation
+# Inside, the trainControl() function will specify that we perform 10-fold validation
+# THe "method='rpart'" argument specifies that we are applying CART
+# We can pass specific values of minbucket (e.g., 50 here)
+# Finally, we specify our metric of interest (Rsquared, mse, etc)
+data.train$Cluster <- factor(data.train$Cluster)
+
+
+data.train[data.train$Cluster=="0" ,]$Cluster = rep("Cluster0", nrow(data.train[data.train$Cluster=="0" ,]))
+
+data.train[data.train$Cluster=="1" ,]$Cluster = rep("Cluster1", nrow(data.train[data.train$Cluster=="1" ,]))
+
+data.train[data.train$Cluster=="2" ,]$Cluster = rep("Cluster2", nrow(data.train[data.train$Cluster=="2" ,]))
+
+data.train[data.train$Cluster=="3" ,]$Cluster = rep("Cluster3", nrow(data.train[data.train$Cluster=="3" ,]))
+
+data.train[data.train$Cluster=="4" ,]$Cluster = rep("Cluster4", nrow(data.train[data.train$Cluster=="4" ,]))
+
+
+cpCV = train(Cluster~.,
+             trControl=trainControl(method="cv",number=7,classProbs=TRUE), 
+             data=data.train, method="rpart",minbucket=5, tuneGrid=cpVals, maximize=TRUE)
+
+# Let us look at that object
+cpCV
+
+
+cpVals<-data.frame(.cp = seq(0, .04, by=.001))
+
+Loss <-function(data, lev = NULL, model = NULL, ...) {c(AvgLoss= mean(data$weights* (data$obs!= data$pred)),Accuracy = mean(data$obs== data$pred))}
+
+trControl<-trainControl(method="cv",number=10,summaryFunction=Loss)
+
+cpCV= train(Cluster~.,trControl=trControl, data=data.train, method="rpart",tuneGrid=cpVals, metric="AvgLoss", maximize=FALSE)
+
+cpCV$results
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+#prp(tree, digits = 3, varlen = 0, faclen = 0, tweak = 1)
+rpart.plot(tree)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

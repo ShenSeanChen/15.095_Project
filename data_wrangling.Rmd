@@ -1,0 +1,510 @@
+---
+title: "Nicole_Sean"
+author: "Sean"
+date: "21/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+## R Markdown
+
+```{r cars}
+mydata <- read.csv("Batch_3844118_batch_results.csv")
+mydata <- mydata %>% filter(Answer.age < 100)
+mydata
+
+mydata_cleaned <- read.csv("pilot_data_cleaned.csv")
+mydata_cleaned
+
+data.frame(lapply(mydata_cleaned, function(v) {
+  if (is.character(v)) return(toupper(v))
+  else return(v)
+}))
+
+# to convert all true and false to upper cases
+mydata_cleaned <- mutate_each(mydata_cleaned, funs(toupper)) 
+      
+
+# bed.time.normal
+bed.time.normal <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("answer.bed.time.normal")) 
+
+bed.time.normal$Answer.bed.time.normal <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(bed.time.normal))-1)) {
+    if (bed.time.normal[i,j] == TRUE) {
+      bed.time.normal$Answer.bed.time.normal[i] = colnames(bed.time.normal)[j]
+    }
+  }
+}
+bed.time.normal
+
+# bed.time.yesterday
+bed.time.yesterday <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("answer.bed.time.yesterday")) 
+
+bed.time.yesterday$Answer.bed.time.yesterday <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(bed.time.yesterday))-1)) {
+    if (bed.time.yesterday[i,j] == TRUE) {
+      bed.time.yesterday$Answer.bed.time.yesterday[i] = colnames(bed.time.yesterday)[j]
+    }
+  }
+}
+bed.time.yesterday
+
+# Answer.ethnicity
+Answer.ethnicity <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.ethnicity")) 
+
+Answer.ethnicity$Answer.ethnicity <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.ethnicity))-1)) {
+    if (Answer.ethnicity[i,j] == TRUE) {
+      Answer.ethnicity$Answer.ethnicity[i] = colnames(Answer.ethnicity)[j]
+    }
+  }
+}
+Answer.ethnicity
+
+####################################################
+# Answer.gender
+Answer.gender <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.gender")) 
+
+Answer.gender$Answer.gender <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.gender))-1)) {
+    if (Answer.gender[i,j] == TRUE) {
+      Answer.gender$Answer.gender[i] = colnames(Answer.gender)[j]
+    }
+  }
+}
+Answer.gender
+
+# Answer.income
+Answer.income <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.income")) 
+
+Answer.income$Answer.income <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.income))-1)) {
+    if (Answer.income[i,j] == TRUE) {
+      Answer.income$Answer.income[i] = colnames(Answer.income)[j]
+    }
+  }
+}
+Answer.income
+
+
+# Answer.introvert
+Answer.introvert <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.introvert")) 
+
+Answer.introvert$Answer.introvert <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.introvert))-1)) {
+    if (Answer.introvert[i,j] == TRUE) {
+      Answer.introvert$Answer.introvert[i] = colnames(Answer.introvert)[j]
+    }
+  }
+}
+Answer.introvert
+
+
+# Answer.location
+Answer.location <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.location")) 
+
+Answer.location$Answer.location <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.location))-1)) {
+    if (Answer.location[i,j] == TRUE) {
+      Answer.location$Answer.location[i] = colnames(Answer.location)[j]
+    }
+  }
+}
+Answer.location
+
+
+# Answer.marital
+Answer.marital <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.marital")) 
+
+Answer.marital$Answer.marital <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.marital))-1)) {
+    if (Answer.marital[i,j] == TRUE) {
+      Answer.marital$Answer.marital[i] = colnames(Answer.marital)[j]
+    }
+  }
+}
+Answer.marital
+
+
+# Answer.meal.ideal
+Answer.meal.ideal <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.meal.ideal")) 
+
+Answer.meal.ideal$Answer.meal.ideal <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.meal.ideal))-1)) {
+    if (Answer.meal.ideal[i,j] == TRUE) {
+      Answer.meal.ideal$Answer.meal.ideal[i] = colnames(Answer.meal.ideal)[j]
+    }
+  }
+}
+Answer.meal.ideal
+
+
+# Answer.meal.minimum
+Answer.meal.minimum <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.meal.minimum")) 
+
+Answer.meal.minimum$Answer.meal.minimum <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.meal.minimum))-1)) {
+    if (Answer.meal.minimum[i,j] == TRUE) {
+      Answer.meal.minimum$Answer.meal.minimum[i] = colnames(Answer.meal.minimum)[j]
+    }
+  }
+}
+Answer.meal.minimum
+
+
+# Answer.meal.normal
+Answer.meal.normal <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.meal.normal")) 
+
+Answer.meal.normal$Answer.meal.normal <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.meal.normal))-1)) {
+    if (Answer.meal.normal[i,j] == TRUE) {
+      Answer.meal.normal$Answer.meal.normal[i] = colnames(Answer.meal.normal)[j]
+    }
+  }
+}
+Answer.meal.normal
+
+
+
+# Answer.meal.yesterday
+Answer.meal.yesterday <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.meal.yesterday")) 
+
+Answer.meal.yesterday$Answer.meal.yesterday <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.meal.yesterday))-1)) {
+    if (Answer.meal.yesterday[i,j] == TRUE) {
+      Answer.meal.yesterday$Answer.meal.yesterday[i] = colnames(Answer.meal.yesterday)[j]
+    }
+  }
+}
+Answer.meal.yesterday
+
+
+# Answer.occupation
+Answer.occupation <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.occupation")) 
+
+Answer.occupation$Answer.occupation <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.occupation))-1)) {
+    if (Answer.occupation[i,j] == TRUE) {
+      Answer.occupation$Answer.occupation[i] = colnames(Answer.occupation)[j]
+    }
+  }
+}
+Answer.occupation
+
+
+# Answer.prefer.activity
+Answer.prefer.activity <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.prefer.activity")) 
+
+Answer.prefer.activity$Answer.prefer.activity <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.prefer.activity))-1)) {
+    if (Answer.prefer.activity[i,j] == TRUE) {
+      Answer.prefer.activity$Answer.prefer.activity[i] = colnames(Answer.prefer.activity)[j]
+    }
+  }
+}
+Answer.prefer.activity
+
+
+# Answer.rise.time.normal
+Answer.rise.time.normal <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.rise.time.normal")) 
+
+Answer.rise.time.normal$Answer.rise.time.normal <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.rise.time.normal))-1)) {
+    if (Answer.rise.time.normal[i,j] == TRUE) {
+      Answer.rise.time.normal$Answer.rise.time.normal[i] = colnames(Answer.rise.time.normal)[j]
+    }
+  }
+}
+Answer.rise.time.normal
+
+
+# Answer.rise.time.yesterday
+Answer.rise.time.yesterday <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.rise.time.yesterday")) 
+
+Answer.rise.time.yesterday$Answer.rise.time.yesterday <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.rise.time.yesterday))-1)) {
+    if (Answer.rise.time.yesterday[i,j] == TRUE) {
+      Answer.rise.time.yesterday$Answer.rise.time.yesterday[i] = colnames(Answer.rise.time.yesterday)[j]
+    }
+  }
+}
+Answer.rise.time.yesterday
+
+
+# Answer.social.event.yesterday
+Answer.social.event.yesterday <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.social.event.yesterday")) 
+
+Answer.social.event.yesterday$Answer.social.event.yesterday <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.social.event.yesterday))-1)) {
+    if (Answer.social.event.yesterday[i,j] == TRUE) {
+      Answer.social.event.yesterday$Answer.social.event.yesterday[i] = colnames(Answer.social.event.yesterday)[j]
+    }
+  }
+}
+Answer.social.event.yesterday
+
+
+# Answer.sports
+Answer.sports <- mydata_cleaned %>% 
+  select(WorkerId,starts_with("Answer.sports")) 
+
+Answer.sports$Answer.sports <- NA
+for (i in 1:nrow(mydata_cleaned)) {
+  for (j in 2:(length(colnames(Answer.sports))-1)) {
+    if (Answer.sports[i,j] == TRUE) {
+      Answer.sports$Answer.sports[i] = colnames(Answer.sports)[j]
+    }
+  }
+}
+Answer.sports
+
+# aggregate daga together
+my_data_cleaned <- mydata_cleaned %>% 
+  left_join(bed.time.normal) %>%
+  left_join(Answer.ethnicity) %>%
+  left_join(bed.time.yesterday) %>%
+  left_join(Answer.ethnicity) %>%
+  left_join(Answer.gender) %>%
+  left_join(Answer.income) %>%
+  left_join(Answer.introvert) %>%
+  left_join(Answer.location) %>%
+  left_join(Answer.marital) %>%
+  left_join(Answer.meal.ideal) %>%
+  left_join(Answer.meal.minimum) %>%
+  left_join(Answer.meal.normal) %>%
+  left_join(Answer.meal.yesterday) %>%
+  left_join(Answer.occupation) %>%
+  left_join(Answer.prefer.activity) %>%
+  left_join(Answer.rise.time.normal) %>%
+  left_join(Answer.rise.time.yesterday) %>%
+  left_join(Answer.social.event.yesterday) %>%
+  left_join(Answer.sports)
+  
+
+r_data_cleaned <- my_data_cleaned %>% select(
+                          -starts_with("Answer.bed.time.normal."),
+                          -starts_with("Answer.bed.time.yesterday."),
+                          -starts_with("Answer.ethnicity."),
+                          -starts_with("Answer.gender."),
+                          -starts_with("Answer.income."),
+                          -starts_with("Answer.introvert."),
+                          -starts_with("Answer.location."),
+                          -starts_with("Answer.marital."),
+                          -starts_with("Answer.meal.normal."),
+                          -starts_with("Answer.meal.ideal."),
+                          -starts_with("Answer.meal.minimum."),
+                          -starts_with("Answer.meal.time.normal."),
+                          -starts_with("Answer.meal.yesterday."),
+                          # -starts_with("Answer.meal.time.yesterday."),
+
+                          -starts_with("Answer.occupation."),
+                          -starts_with("Answer.prefer.activity."),
+                          -starts_with("Answer.rise.time.normal."),
+                          -starts_with("Answer.rise.time.yesterday."),
+                          -starts_with("Answer.social.event.yesterday."),
+                          -starts_with("Answer.sports."))
+
+write.csv(r_data_cleaned, "r_data_cleaned.csv")
+
+read.csv("r_data_cleaned.csv")
+
+# multiple choices
+# Answer.meal.time.yesterday
+```
+
+```{r pressure, echo=FALSE}
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.bed.time.normal)) +
+             coord_flip()
+
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.bed.time.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.ethnicity)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.gender)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.income)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.introvert)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.location)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.marital)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.ideal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.minimum)) +
+             coord_flip()
+# r_data_cleaned %>%
+#              ggplot() +
+#              geom_bar(aes(x=Answer.meal.time.normal)) +
+#              coord_flip()
+# r_data_cleaned %>%
+#              ggplot() +
+#              geom_bar(aes(x=Answer.meal.time.yesterday)) +
+#              coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.meal.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.occupation)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.prefer.activity)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.rise.time.normal)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.rise.time.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.social.event.yesterday)) +
+             coord_flip()
+r_data_cleaned %>%
+             ggplot() +
+             geom_bar(aes(x=Answer.sports)) +
+             coord_flip()
+  
+```
+
+```{r }
+
+```
+
+```{r }
+r_data_cleaned$Answer.easy.concentration <- as.numeric(r_data_cleaned$Answer.easy.concentration)
+r_data_cleaned$Answer.easy.conversation <- as.numeric(r_data_cleaned$Answer.easy.conversation)
+r_data_cleaned$Answer.tired <- as.numeric(r_data_cleaned$Answer.tired)
+r_data_cleaned$Answer.energetic <- as.numeric(r_data_cleaned$Answer.energetic)
+r_data_cleaned$Answer.sleepy <- as.numeric(r_data_cleaned$Answer.sleepy)
+
+r_data_cleaned <- r_data_cleaned %>% mutate(mean_score = rowMeans(select(r_data_cleaned, Answer.easy.concentration, Answer.easy.conversation,Answer.tired, Answer.energetic, Answer.sleepy)))
+```
+
+```{r Tree Model}
+library(rpart)
+library(rpart.plot)
+energyTree = rpart(mean_score ~ ., method  = "anova", data=r_data_cleaned %>% select(-WorkerId))
+
+# To plot the tree, we can use use prp (for "plot rpart")
+# Use digits, varlen, and faclen to display more significant digits and more characters in names.
+rpart.plot(energyTree, digits = 3, varlen = 0, faclen = 0)
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+```{r }
+
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+hist(mydata$Answer.age)
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
